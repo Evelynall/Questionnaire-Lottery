@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "一等奖",
+    "quantity": 0,
+    "probability": 0.01
+  },
+  {
+    "id": 2,
+    "name": "二等奖",
+    "quantity": 0,
+    "probability": 0.05
+  },
+  {
+    "id": 3,
+    "name": "三等奖",
+    "quantity": 0,
+    "probability": 0.2
+  },
+  {
+    "id": 4,
+    "name": "四等奖",
+    "quantity": 0,
+    "probability": 0.74
+  },
+  {
+    "id": 5,
+    "name": "特等奖",
+    "quantity": 0,
+    "probability": 0.2
+  }
+]

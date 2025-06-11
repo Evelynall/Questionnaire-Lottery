@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>问卷调查与抽奖</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 定义一个简单的动画效果 */
+        @keyframes tada {
+            from {
+                transform: scale3d(1, 1, 1);
+            }
+
+            10%,
+            20% {
+                transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg);
+            }
+
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+            }
+
+            40%,
+            60%,
+            80% {
+                transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+            }
+
+            to {
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        .animate-tada {
+            animation: tada 1s ease-in-out;
+        }
+
+        .gift-box {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .gift-box:hover {
+            transform: scale(1.1);
+        }
+
+        .gift-lid {
+            width: 160px;
+            height: 40px;
+            background-color: #ef4444;
+            /* red-500 */
+            position: absolute;
+            top: 25px;
+            left: -5px;
+            border-radius: 8px;
+            z-index: 10;
+            transition: top 0.5s ease, transform 0.5s ease;
+        }
+
+        .gift-base {
+            width: 150px;
+            height: 100px;
+            background-color: #dc2626;
+            /* red-600 */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            border-radius: 8px;
+        }
+
+        .gift-box.open .gift-lid {
+            top: -50px;
+            transform: rotate(-20deg);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12 my-8">
+
+        <!-- 模块一：问卷表单 -->
+        <div id="form-container">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">会议报道</h1>
+            <p class="text-gray-600 mb-8">请您填写以下信息，完成后可参与抽奖。</p>
+            <form id="questionnaire-form">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">姓名</label>
+                        <input type="text" id="name" name="name" required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                    </div>
+                    <div>
+                        <label for="department" class="block text-sm font-medium text-gray-700 mb-2">科室</label>
+                        <input type="text" id="department" name="department" required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                    </div>
+                    <div>
+                        <label for="position" class="block text-sm font-medium text-gray-700 mb-2">职务/职位</label>
+                        <input type="text" id="position" name="position" required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                    </div>
+                    <div>
+                        <label for="organization" class="block text-sm font-medium text-gray-700 mb-2">单位</label>
+                        <input type="text" id="organization" name="organization" required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">电话号码</label>
+                        <input type="tel" id="phone" name="phone" required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                            placeholder=" ">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">电子邮件</label>
+                        <input type="email" id="email" name="email" required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <button type="submit" id="submit-button"
+                        class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300">
+                        提交并抽奖
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 模块二：抽奖界面 -->
+        <div id="lottery-container" class="hidden text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">感谢参与！</h1>
+            <p class="text-gray-600 mb-8">您已获得一次抽奖机会，点击下方的礼盒开启吧！</p>
+            <div class="flex justify-center my-10">
+                <div id="gift-box" class="gift-box">
+                    <div class="gift-lid"></div>
+                    <div class="gift-base"></div>
+                </div>
+            </div>
+            <p id="lottery-status" class="text-lg font-medium text-blue-600 h-8"></p>
+        </div>
+
+        <!-- 模块三：结果提示 -->
+        <div id="message-container" class="hidden text-center py-10">
+            <div id="result-icon" class="text-6xl mb-4"></div>
+            <h2 id="message-title" class="text-2xl font-bold mb-2"></h2>
+            <p id="message-text" class="text-gray-600"></p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DOM 元素获取 ---
+        const formContainer = document.getElementById('form-container');
+        const questionnaireForm = document.getElementById('questionnaire-form');
+        const submitButton = document.getElementById('submit-button');
+
+        const lotteryContainer = document.getElementById('lottery-container');
+        const giftBox = document.getElementById('gift-box');
+        const lotteryStatus = document.getElementById('lottery-status');
+
+        const messageContainer = document.getElementById('message-container');
+        const resultIcon = document.getElementById('result-icon');
+        const messageTitle = document.getElementById('message-title');
+        const messageText = document.getElementById('message-text');
+
+        // --- 存储手机号 ---
+        let userPhoneForLottery = '';
+
+        // --- 事件监听 ---
+
+        // 1. 问卷提交事件
+        questionnaireForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = '正在提交...';
+
+            const formData = new FormData(questionnaireForm);
+            const data = Object.fromEntries(formData.entries());
+            userPhoneForLottery = data.phone; // 保存手机号
+
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    // 提交成功，切换到抽奖视图
+                    formContainer.classList.add('hidden');
+                    lotteryContainer.classList.remove('hidden');
+                } else {
+                    // 提交失败，显示错误信息
+                    showFinalMessage('❌', '提交失败', result.message || '数据保存失败，请重试。');
+                    submitButton.disabled = false;
+                    submitButton.textContent = '提交并抽奖';
+                }
+            } catch (error) {
+                showFinalMessage('❌', '网络错误', '无法连接到服务器，请检查您的网络。');
+                submitButton.disabled = false;
+                submitButton.textContent = '提交并抽奖';
+            }
+        });
+
+        // 2. 点击礼盒抽奖事件
+        giftBox.addEventListener('click', async () => {
+            if (giftBox.classList.contains('open')) return; // 防止重复点击
+
+            // 显示抽奖动画和文字
+            giftBox.classList.add('open');
+            lotteryStatus.textContent = '正在开奖...';
+
+            try {
+                const response = await fetch('/draw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: userPhoneForLottery }),
+                });
+                const result = await response.json();
+
+                // 延迟显示结果，让动画更完整
+                setTimeout(() => {
+                    lotteryContainer.classList.add('hidden');
+                    if (response.ok && result.success) {
+                        // 抽奖成功
+                        const isWin = !result.prize.includes('谢谢');
+                        showFinalMessage(
+                            isWin ? '🎉' : '😊',
+                            isWin ? '恭喜您！' : '感谢参与',
+                            `您抽中的是：${result.prize}`
+                        );
+                    } else {
+                        // 抽奖失败（如已抽过）
+                        showFinalMessage('🚫', '抽奖失败', result.message);
+                    }
+                }, 1000); // 延迟1秒
+
+            } catch (error) {
+                setTimeout(() => {
+                    lotteryContainer.classList.add('hidden');
+                    showFinalMessage('❌', '网络错误', '无法连接到服务器，请检查您的网络。');
+                }, 1000);
+            }
+        });
+
+        // --- 辅助函数 ---
+
+        // 统一的结果显示函数
+        function showFinalMessage(icon, title, text) {
+            formContainer.classList.add('hidden');
+            lotteryContainer.classList.add('hidden');
+            messageContainer.classList.remove('hidden');
+
+            resultIcon.textContent = icon;
+            messageTitle.textContent = title;
+            messageText.textContent = text;
+            messageTitle.parentElement.classList.add('animate-tada');
+        }
+
+    </script>
+</body>
+
+</html>
