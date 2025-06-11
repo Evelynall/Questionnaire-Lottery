@@ -1,32 +1,32 @@
 [
   {
-    "id": 1,
-    "name": "一等奖",
+    "id": "3909d9dd2a6660b7",
+    "name": "特等奖",
     "quantity": 0,
-    "probability": 0.01
+    "probability": 0.05
   },
   {
-    "id": 2,
+    "id": "2dd6217dd88760a3",
+    "name": "一等奖",
+    "quantity": 0,
+    "probability": 0.05
+  },
+  {
+    "id": "646a4560acc5d702",
     "name": "二等奖",
     "quantity": 0,
     "probability": 0.05
   },
   {
-    "id": 3,
+    "id": "df4bdcad5f7b8762",
     "name": "三等奖",
     "quantity": 0,
-    "probability": 0.2
+    "probability": 0.05
   },
   {
-    "id": 4,
+    "id": "cfe26622ad8c6450",
     "name": "四等奖",
     "quantity": 0,
-    "probability": 0.74
-  },
-  {
-    "id": 5,
-    "name": "特等奖",
-    "quantity": 0,
-    "probability": 0.2
+    "probability": 0.05
   }
 ]
