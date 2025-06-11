@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .table-cell {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-danger {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+
+        .btn-secondary {
+            background-color: #4b5563;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #374151;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <!-- 登录界面 -->
+    <div id="login-container" class="min-h-screen flex items-center justify-center">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">后台登录</h1>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                    <input type="password" id="password" name="password" required
+                        class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <p id="login-error" class="text-red-500 text-sm h-5 mb-4"></p>
+                <button type="submit" class="w-full btn btn-primary py-3">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 管理后台界面 (默认隐藏) -->
+    <div id="dashboard-container" class="hidden">
+        <header class="bg-white shadow-md">
+            <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold text-gray-800">抽奖管理后台</h1>
+                <button id="logout-button" class="btn btn-secondary">登出</button>
+            </nav>
+        </header>
+
+        <main class="container mx-auto p-6">
+            <!-- 奖品管理 -->
+            <section id="prizes-section" class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">奖品管理</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-700">
+                        <thead class="bg-gray-100 text-gray-600 uppercase">
+                            <tr>
+                                <th class="table-cell">奖品名称</th>
+                                <th class="table-cell">数量 (-1为无限)</th>
+                                <th class="table-cell">概率 (0-1)</th>
+                                <th class="table-cell">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prizes-table-body">
+                            <!-- 奖品行将通过JS动态插入 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">添加新奖品</h3>
+                    <form id="add-prize-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <input type="text" id="new-prize-name" placeholder="奖品名称"
+                            class="w-full px-3 py-2 bg-gray-50 border rounded-lg" required>
+                        <input type="number" id="new-prize-quantity" placeholder="数量"
+                            class="w-full px-3 py-2 bg-gray-50 border rounded-lg" required>
+                        <input type="number" id="new-prize-probability" placeholder="概率" step="0.01"
+                            class="w-full px-3 py-2 bg-gray-50 border rounded-lg" required>
+                        <button type="submit" class="btn btn-primary">添加</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 中奖记录 -->
+            <section id="records-section" class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">中奖记录</h2>
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-sm text-left text-gray-700">
+                        <thead class="bg-gray-100 text-gray-600 uppercase sticky top-0">
+                            <tr>
+                                <th class="table-cell">手机号码</th>
+                                <th class="table-cell">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-table-body">
+                            <!-- 记录将通过JS动态插入 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 问卷数据 -->
+            <section id="questionnaire-section" class="bg-white rounded-2xl shadow-lg p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">问卷数据</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-700">
+                        <thead id="questionnaire-table-head" class="bg-gray-100 text-gray-600 uppercase">
+                            <!-- 表头将通过JS动态插入 -->
+                        </thead>
+                        <tbody id="questionnaire-table-body">
+                            <!-- 数据将通过JS动态插入 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const loginContainer = document.getElementById('login-container');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const loginForm = document.getElementById('login-form');
+        const passwordInput = document.getElementById('password');
+        const loginError = document.getElementById('login-error');
+        const logoutButton = document.getElementById('logout-button');
+
+        const prizesTableBody = document.getElementById('prizes-table-body');
+        const addPrizeForm = document.getElementById('add-prize-form');
+
+        const recordsTableBody = document.getElementById('records-table-body');
+        const questionnaireTableHead = document.getElementById('questionnaire-table-head');
+        const questionnaireTableBody = document.getElementById('questionnaire-table-body');
+
+        // --- Functions ---
+
+        /**
+         * Generic fetch wrapper to handle errors and authorization
+         * @param {string} url - The URL to fetch
+         * @param {object} options - The fetch options
+         * @returns {Promise<any>} - The JSON response
+         */
+        async function apiFetch(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                if (response.status === 401) {
+                    // If unauthorized, redirect to login
+                    showLogin();
+                    throw new Error('Unauthorized');
+                }
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API Fetch Error:', error);
+                alert(`操作失败: ${error.message}`);
+                throw error;
+            }
+        }
+
+        function showDashboard() {
+            loginContainer.classList.add('hidden');
+            dashboardContainer.classList.remove('hidden');
+            loadAllData();
+        }
+
+        function showLogin() {
+            dashboardContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+        }
+
+        async function loadAllData() {
+            loadPrizes();
+            loadRecords();
+            loadQuestionnaireData();
+        }
+
+        // Load and display prizes
+        async function loadPrizes() {
+            const { prizes } = await apiFetch('/api/prizes');
+            prizesTableBody.innerHTML = '';
+            prizes.forEach(prize => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="table-cell"><input type="text" value="${prize.name}" class="w-full bg-transparent prize-update-input" data-id="${prize.id}" data-field="name"></td>
+                    <td class="table-cell"><input type="number" value="${prize.quantity}" class="w-full bg-transparent prize-update-input" data-id="${prize.id}" data-field="quantity"></td>
+                    <td class="table-cell"><input type="number" step="0.01" value="${prize.probability}" class="w-full bg-transparent prize-update-input" data-id="${prize.id}" data-field="probability"></td>
+                    <td class="table-cell">
+                        <button class="btn btn-danger delete-prize-btn" data-id="${prize.id}">删除</button>
+                    </td>
+                `;
+                prizesTableBody.appendChild(tr);
+            });
+        }
+
+        // Load and display records
+        async function loadRecords() {
+            const { records } = await apiFetch('/api/records');
+            recordsTableBody.innerHTML = '';
+            records.forEach(phone => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="table-cell">${phone}</td>
+                    <td class="table-cell">
+                         <button class="btn btn-danger delete-record-btn" data-phone="${phone}">删除</button>
+                    </td>
+                `;
+                recordsTableBody.appendChild(tr);
+            });
+        }
+
+        // Load and display questionnaire data
+        async function loadQuestionnaireData() {
+            const { headers, data } = await apiFetch('/api/questionnaire');
+            if (!headers || headers.length === 0) return;
+
+            questionnaireTableHead.innerHTML = `<tr>${headers.map(h => `<th class="table-cell">${h}</th>`).join('')}</tr>`;
+            questionnaireTableBody.innerHTML = '';
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = headers.map(h => `<td class="table-cell">${row[h] || ''}</td>`).join('');
+                questionnaireTableBody.appendChild(tr);
+            });
+        }
+
+        // --- Event Listeners ---
+
+        // Check authentication status on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/auth/check');
+                const { isAuthenticated } = await response.json();
+                if (isAuthenticated) {
+                    showDashboard();
+                } else {
+                    showLogin();
+                }
+            } catch (error) {
+                console.error('Auth check failed', error);
+                showLogin();
+            }
+        });
+
+        // Login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = passwordInput.value;
+            loginError.textContent = '';
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    showDashboard();
+                } else {
+                    loginError.textContent = result.message || '登录失败';
+                }
+            } catch (error) {
+                loginError.textContent = '网络错误，请稍后重试。';
+            }
+        });
+
+        // Logout button
+        logoutButton.addEventListener('click', async () => {
+            await fetch('/logout', { method: 'POST' });
+            window.location.reload();
+        });
+
+        // Add new prize
+        addPrizeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-prize-name').value;
+            const quantity = document.getElementById('new-prize-quantity').value;
+            const probability = document.getElementById('new-prize-probability').value;
+
+            await apiFetch('/api/prizes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, quantity, probability })
+            });
+            addPrizeForm.reset();
+            loadPrizes();
+        });
+
+        // Use event delegation for updating and deleting prizes/records
+        document.body.addEventListener('click', async (e) => {
+            // Delete prize
+            if (e.target.classList.contains('delete-prize-btn')) {
+                const id = e.target.dataset.id;
+                if (confirm('确定要删除这个奖品吗？')) {
+                    await apiFetch(`/api/prizes/${id}`, { method: 'DELETE' });
+                    loadPrizes();
+                }
+            }
+            // Delete record
+            if (e.target.classList.contains('delete-record-btn')) {
+                const phone = e.target.dataset.phone;
+                if (confirm(`确定要删除手机号 ${phone} 的中奖记录吗？`)) {
+                    await apiFetch('/api/records/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone })
+                    });
+                    loadRecords();
+                }
+            }
+        });
+
+        // Event delegation for updating prize fields on blur
+        document.body.addEventListener('blur', async (e) => {
+            if (e.target.classList.contains('prize-update-input')) {
+                const id = e.target.dataset.id;
+                const field = e.target.dataset.field;
+                const value = e.target.value;
+
+                // Get all current values for the prize
+                const row = e.target.closest('tr');
+                const name = row.querySelector('[data-field="name"]').value;
+                const quantity = row.querySelector('[data-field="quantity"]').value;
+                const probability = row.querySelector('[data-field="probability"]').value;
+
+                await apiFetch(`/api/prizes/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, quantity, probability })
+                });
+                // No need to reload, just confirm it's saved. Maybe a small visual indicator later.
+            }
+        }, true); // Use capturing to ensure blur event is caught
+
+    </script>
+</body>
+
+</html>
