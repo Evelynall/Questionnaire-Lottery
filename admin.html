@@ -45,13 +45,46 @@
             background-color: #b91c1c;
         }
 
-        .btn-secondary {
-            background-color: #4b5563;
-            color: white;
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
         }
 
-        .btn-secondary:hover {
-            background-color: #374151;
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #d1d5db;
+            border-radius: 28px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #2563eb;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
         }
     </style>
 </head>
@@ -79,7 +112,18 @@
         <header class="bg-white shadow-md">
             <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
                 <h1 class="text-xl font-bold text-gray-800">抽奖管理后台</h1>
-                <button id="logout-button" class="btn btn-secondary">登出</button>
+                <div class="flex items-center gap-6">
+                    <!-- 抽奖开关 -->
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium text-gray-600">抽奖功能</span>
+                        <label class="toggle-switch" title="开启/关闭抽奖">
+                            <input type="checkbox" id="lottery-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span id="lottery-status-label" class="text-sm font-semibold w-8 text-gray-400">···</span>
+                    </div>
+                    <button id="logout-button" class="btn btn-secondary">登出</button>
+                </div>
             </nav>
         </header>
 
@@ -150,6 +194,10 @@
             </section>
         </main>
     </div>
+    <!-- Footer -->
+    <footer class="py-8 text-center text-sm text-gray-500">
+        <p>By: <a href="https://github.com/Evelynall/Questionnaire-Lottery" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Evelynall</a></p>
+    </footer>
 
     <script>
         // --- DOM Elements ---
@@ -159,6 +207,9 @@
         const passwordInput = document.getElementById('password');
         const loginError = document.getElementById('login-error');
         const logoutButton = document.getElementById('logout-button');
+
+        const lotteryToggle = document.getElementById('lottery-toggle');
+        const lotteryStatusLabel = document.getElementById('lottery-status-label');
 
         const prizesTableBody = document.getElementById('prizes-table-body');
         const addPrizeForm = document.getElementById('add-prize-form');
@@ -210,6 +261,21 @@
             loadPrizes();
             loadRecords();
             loadQuestionnaireData();
+            loadSettings();
+        }
+
+        // Load lottery toggle state
+        async function loadSettings() {
+            try {
+                const { lotteryEnabled } = await apiFetch('/api/settings');
+                lotteryToggle.checked = lotteryEnabled;
+                updateToggleLabel(lotteryEnabled);
+            } catch (e) { /* apiFetch already shows alert */ }
+        }
+
+        function updateToggleLabel(enabled) {
+            lotteryStatusLabel.textContent = enabled ? '开启' : '关闭';
+            lotteryStatusLabel.className = `text-sm font-semibold w-8 ${enabled ? 'text-blue-600' : 'text-gray-400'}`;
         }
 
         // Load and display prizes
@@ -305,6 +371,22 @@
         logoutButton.addEventListener('click', async () => {
             await fetch('/logout', { method: 'POST' });
             window.location.reload();
+        });
+
+        // Lottery toggle
+        lotteryToggle.addEventListener('change', async () => {
+            const enabled = lotteryToggle.checked;
+            try {
+                await apiFetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lotteryEnabled: enabled })
+                });
+                updateToggleLabel(enabled);
+            } catch (e) {
+                // 操作失败时恢复开关状态
+                lotteryToggle.checked = !enabled;
+            }
         });
 
         // Add new prize

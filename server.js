@@ -18,6 +18,7 @@ const recordsFilePath = path.join(__dirname, 'lottery_records.json');
 // --- 全局变量，用于在内存中存储数据 ---
 let prizes = [];
 let lotteryRecords = new Set(); // 使用 Set 以获得更快的查找性能
+let lotteryEnabled = true; // 抽奖开关，默认开启
 
 // --- 数据文件读写辅助函数 ---
 const readJsonFile = async (filePath) => {
@@ -102,6 +103,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// 公开接口：前端查询抽奖开关状态（无需认证）
+app.get('/api/lottery-status', (req, res) => {
+    res.json({ lotteryEnabled });
+});
+
 app.post('/submit', async (req, res) => {
     const { name, department, position, organization, phone, email } = req.body;
     const sanitize = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`;
@@ -109,7 +115,7 @@ app.post('/submit', async (req, res) => {
     try {
         await fs.appendFile(dataFilePath, newRecord, 'utf8');
         console.log('成功接收并保存一条新数据:', req.body);
-        res.status(200).json({ success: true, message: '信息提交成功！' });
+        res.status(200).json({ success: true, message: '信息提交成功！', lotteryEnabled });
     } catch (err) {
         console.error('文件写入失败:', err);
         res.status(500).json({ success: false, message: '数据保存失败，请联系管理员！' });
@@ -129,7 +135,7 @@ app.post('/draw', async (req, res) => {
     if (availablePrizes.length === 0) {
         return res.status(500).json({ success: false, message: '抱歉，所有奖品已被抽完！' });
     }
-    
+
     // ... (抽奖逻辑保持不变)
     const totalProbability = availablePrizes.reduce((sum, p) => sum + p.probability, 0);
     const random = Math.random() * totalProbability;
@@ -203,6 +209,20 @@ app.get('/api/auth/check', (req, res) => {
 // 所有 /api/ 路由都需要通过认证中间件
 app.get('/api/prizes', authMiddleware, (req, res) => res.json({ success: true, prizes }));
 app.get('/api/records', authMiddleware, (req, res) => res.json({ success: true, records: Array.from(lotteryRecords) }));
+
+// 抽奖开关设置接口
+app.get('/api/settings', authMiddleware, (req, res) => {
+    res.json({ success: true, lotteryEnabled });
+});
+app.post('/api/settings', authMiddleware, (req, res) => {
+    const { lotteryEnabled: enabled } = req.body;
+    if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ success: false, message: '参数错误，lotteryEnabled 必须为布尔值。' });
+    }
+    lotteryEnabled = enabled;
+    console.log(`抽奖开关已${lotteryEnabled ? '开启' : '关闭'}`);
+    res.json({ success: true, lotteryEnabled });
+});
 
 app.post('/api/prizes', authMiddleware, async (req, res) => {
     const { name, quantity, probability } = req.body;
